@@ -1,4 +1,4 @@
-type PaginationOutput = { offset: number, limit: number}
+export type PaginationOutput = { offset: number, limit: number}
 
 export const paginate = (page: number, pageSize: number): PaginationOutput => {
     const offset = page * pageSize;
