@@ -5,5 +5,5 @@ interface IEnvironment {
 
 export const Environment: IEnvironment = {
     server_port: 3000,
-    mongo_uri: "mongodb127.0.0.127017NEST_DB"
+    mongo_uri: "mongodb://127.0.0.1:27017/NEST_DB"
 }
