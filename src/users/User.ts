@@ -18,7 +18,7 @@ export const UserSchema = new mongoose.Schema({
         required: true
     },
     gender: {
-        type: Number,
+        type: String,
         default: 'OTHER'
     }
 });

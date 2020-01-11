@@ -1,49 +1,86 @@
 import { PaginationOutput } from "../helpers/pagination";
-import { Injectable } from '@nestjs/common'
+import { Injectable, HttpException } from '@nestjs/common'
 
-export interface IBaseRepository {
-    getList(pagination: PaginationOutput | null):Promise<any>;
-    getOneById(id: string): Promise<any>;
-    getOneByWhere(where: any): Promise<any>;
-    create(entity: any): Promise<any>;
-    update(id: string, entity: any): Promise<any>;
-    delete(id: string): Promise<any>;
-}
+// export interface IBaseRepository {
+//     getList(pagination: PaginationOutput | null):Promise<any>;
+//     getOneById(id: string): Promise<any>;
+//     getOneByWhere(where: any): Promise<any>;
+//     create(entity: any): Promise<any>;
+//     update(id: string, entity: any): Promise<any>;
+//     delete(id: string): Promise<any>;
+// }
 
 @Injectable()
-export class BaseRepository implements IBaseRepository {
+export class BaseRepository {
 
     constructor(private readonly dbModel) { }
 
-    public async getList(pagination: PaginationOutput | null): Promise< any> {
+    protected async getList(pagination: PaginationOutput | null): Promise<any> {
         if(pagination) {
-            return await this.dbModel.find()
+            try {
+                return await this.dbModel.find()
                                 .limit(pagination.limit)
                                 .skip(pagination.offset);
+            } catch (error) {
+                return new HttpException(error, 400);
+            }
         } else {
-            return await this.dbModel.find();
+            try {
+                return await this.dbModel.find();
+            } catch (error) {
+                return new HttpException(error, 400);
+            }
         }
     }
 
-    public async getOneById(id: string): Promise<any> {
-        return await this.dbModel.findById(id);
+    protected async getOneById(id: string): Promise<any> {
+        try {
+            const entity = await this.dbModel.findById(id);
+            if(entity) {
+                return entity
+            } else {
+                return new HttpException("Entity Does not exist", 404);
+            }
+        } catch (error) {
+            return new HttpException(error, 400);
+        }
     }
 
-    public async getOneByWhere(where: any): Promise<any> {
-        return await this.dbModel.find(where);
+    protected async getOneByWhere(where: any): Promise<any> {
+        try {
+            return await this.dbModel.find(where);
+        } catch (error) {
+            return new HttpException(error, 400);
+        }
     }
 
-    public async create(body: any): Promise<any> {
-        const createdModel = new this.dbModel(body);
-        return await createdModel.save();
+    protected async create(body: any): Promise<any> {
+        try {
+            const createdModel = new this.dbModel(body);
+            return await createdModel.save();
+        } catch (error) {
+            return new HttpException(error, 400);
+        }
     }
 
-    public async update(id: string, body: any): Promise<any> {
-        return await this.dbModel.findByIdAndUpdate({'_id': id}, {$set: body});
+    protected async update(id: string, body: any): Promise<any> {
+        try {
+            return await this.dbModel.findByIdAndUpdate({'_id': id}, {$set: body});
+        } catch (error) {
+            return new HttpException(error.message, 400);
+        }
     }
 
-    public async delete(id: string): Promise<any> {
-        return await this.dbModel.findByIdAndDelete(id)
+    protected async delete(id: string): Promise<any> {
+        try {
+            const entity = await this.dbModel.findByIdAndDelete(id);
+            if(entity) {
+                return entity;
+            } else {
+                return new HttpException("Entity Does not exist", 404);
+            }
+        } catch (error) {
+            return new HttpException(error.message, 400);
+        }
     }
 }
-
